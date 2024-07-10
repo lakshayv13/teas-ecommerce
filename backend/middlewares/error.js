@@ -9,9 +9,13 @@ function errorMiddleware(err, req, res, next) {
     err = new ErrorHandler(message, 400);
   }
 
-  if(err.name === "CastError") {
+  if (err.name === "CastError") {
     const message = "Resouce not found";
-    err = new ErrorHandler(message, 404)
+    err = new ErrorHandler(message, 404);
+  }
+
+  if (err.name === "JsonWebTokenError") {
+    err = new ErrorHandler("Error in authorization", 401);
   }
 
   res.status(err.statusCode).json({

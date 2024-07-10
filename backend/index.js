@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 const userRouter = require("./routes/user");
 const { errorMiddleware } = require("./middlewares/error");
@@ -15,11 +16,17 @@ process.on("uncaughtException", (err) => {
 const app = express();
 const port = process.env.PORT || 3000;
 
-
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/v1/user", userRouter);
+
+app.get("/", (req, res) => {
+    res.json({
+        hi: "JI"
+    })
+})
 
 app.use(errorMiddleware);
 

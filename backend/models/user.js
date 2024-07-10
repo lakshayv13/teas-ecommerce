@@ -20,6 +20,10 @@ const UserSchema = mongoose.Schema({
 });
 
 UserSchema.pre("save", function (next) {
+  if (this.isModified("password")) {
+    return next();
+  }
+
   const hash = createHmac(
     process.env.CRYPTO_ALGORITHM,
     process.env.CRYPTO_SECRET

@@ -1,5 +1,6 @@
 const { CatchAsyncError } = require("../middlewares/catchAsyncError");
 const { User } = require("../models/user");
+const { setCookie, deleteCookie } = require("../utils/cookie");
 const { ErrorHandler } = require("../utils/errorHandler");
 const { getAuthPayload } = require("../utils/token");
 const { UserParser } = require("../utils/types");
@@ -19,6 +20,8 @@ const userController = {
 
     const token = user.getAuthToken();
 
+    setCookie(res, "token", token);
+
     res.status(200).json({
       success: true,
       token: token,
@@ -32,20 +35,33 @@ const userController = {
     });
 
     if (!user) {
-      next(new ErrorHandler("Invalid credentials", 404));
+      return next(new ErrorHandler("Invalid credentials", 404));
     }
-    console.log(user);
+
     const isMatch = user.verifyPassword(userPayload.password);
-    console.log(isMatch)
     if (!isMatch) {
-      next(new ErrorHandler("Invalid credentials", 400));
+      return next(new ErrorHandler("Invalid credentials", 400));
     }
 
     const token = user.getAuthToken();
 
+    setCookie(res, "token", token);
+
     res.status(200).json({
       success: true,
       token: token,
+    });
+  }),
+
+  fetchProfile: CatchAsyncError(async (req, res, next) => {
+    res.json("IN function");
+  }),
+
+  logout: CatchAsyncError(async (req, res, next) => {
+    deleteCookie(res, "token");
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
     });
   }),
 };

@@ -7,7 +7,12 @@ const router = express.Router();
 router.route("/signup").post(userController.signUp);
 router.route("/signin").post(userController.signIn);
 
-router.route("/me").get(verifyUser, userController.fetchProfile);
+router
+  .route("/me")
+  .all(verifyUser)
+  .get(userController.fetchProfile)
+  .put(userController.updateProfile)
+  .delete(userController.deleteProfile);
 
 router.route("/logout").get(verifyUser, userController.logout);
 

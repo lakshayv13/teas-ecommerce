@@ -9,13 +9,14 @@ const verifyUser = CatchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("User not authorized", 401));
   }
   const authTokenPayload = getAuthPayload(authToken);
-  
-  const isUser = User.findById(authTokenPayload.id);
-  
-  if(!isUser) {
+
+  const isUser = await User.findById(authTokenPayload.id);
+
+  if (!isUser) {
     return next(new ErrorHandler("User not authorized", 401));
   }
 
+  req.user = isUser;
   next();
 });
 

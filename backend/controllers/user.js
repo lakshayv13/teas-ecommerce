@@ -2,21 +2,12 @@ const { CatchAsyncError } = require("../middlewares/catchAsyncError");
 const { User } = require("../models/user");
 const { setCookie, deleteCookie } = require("../utils/cookie");
 const { ErrorHandler } = require("../utils/errorHandler");
-const { getAuthPayload } = require("../utils/token");
-const { UserParser } = require("../utils/types");
 
 const userController = {
   signUp: CatchAsyncError(async (req, res, next) => {
     const userPayload = req.body;
-    const parsedPayload = UserParser.safeParse(userPayload);
-
-    if (!parsedPayload.success) {
-      const errors = parsedPayload.error.errors.map((error) => error.message);
-      return next(new ErrorHandler(errors.join(", "), 400));
-    }
 
     const user = await User.create(userPayload);
-    await user.save();
 
     const token = user.getAuthToken();
 
@@ -53,15 +44,44 @@ const userController = {
     });
   }),
 
-  fetchProfile: CatchAsyncError(async (req, res, next) => {
-    res.json("IN function");
-  }),
-
   logout: CatchAsyncError(async (req, res, next) => {
     deleteCookie(res, "token");
+    req.user = "";
     res.status(200).json({
       success: true,
       message: "Logged out successfully",
+    });
+  }),
+
+  fetchProfile: CatchAsyncError(async (req, res, next) => {
+    const userPayload = req.user;
+    res.status(200).json({
+      success: true,
+      user: userPayload,
+    });
+  }),
+
+  updateProfile: CatchAsyncError(async (req, res, next) => {
+    const updatePayload = req.query;
+    const userPayload = req.user;
+
+    const fieldName = Object.keys(updatePayload)[0];
+    userPayload[fieldName] = updatePayload[fieldName];
+
+    await userPayload.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+    });
+  }),
+
+  deleteProfile: CatchAsyncError(async (req, res, next) => {
+    const userPayload = req.user;
+    await User.deleteOne(userPayload);
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
     });
   }),
 };

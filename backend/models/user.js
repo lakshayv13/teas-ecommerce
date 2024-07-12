@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { createHmac } = require("node:crypto");
+const { UserParser } = require("../utils/types");
+const { ErrorHandler } = require("../utils/errorHandler");
 
 const UserSchema = mongoose.Schema({
   name: String,
@@ -20,8 +22,11 @@ const UserSchema = mongoose.Schema({
 });
 
 UserSchema.pre("save", function (next) {
-  if (this.isModified("password")) {
-    return next();
+  const parsedPayload = UserParser.safeParse(this);
+
+  if (!parsedPayload.success) {
+    const errors = parsedPayload.error.errors.map((error) => error.message);
+    return next(new ErrorHandler(errors.join(", "), 400));
   }
 
   const hash = createHmac(

@@ -7,6 +7,7 @@ function setCookie(res, key, value) {
 
 function deleteCookie(res, key) {
   res.clearCookie(key);
+  res.user = "";
 }
 
 module.exports = {
